@@ -1,0 +1,45 @@
+{
+  "manifest_version": 3,
+  "name": "ZoomNotes — Multi-Meeting Recorder",
+  "version": "1.0.0",
+  "description": "Silently records audio + screenshots from up to 3 simultaneous Zoom tabs. Transcribes via Gemini 2.5 Flash or local Raspberry Pi. Generates structured notes saved to Notion.",
+  "permissions": [
+    "tabCapture",
+    "tabs",
+    "offscreen",
+    "storage",
+    "alarms",
+    "downloads",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*.zoom.us/*",
+    "https://generativelanguage.googleapis.com/*",
+    "https://api.notion.com/*",
+    "https://integrate.api.nvidia.com/*",
+    "http://rpi.local/*",
+    "http://*/*",
+    "https://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "128": "icon.png"
+    }
+  },
+  "options_page": "settings.html",
+  "icons": {
+    "128": "icon.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["offscreen.html", "dashboard.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

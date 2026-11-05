@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZoomNotes Icon Generator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f0f1a;
+      color: #e0e0f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      gap: 28px;
+      padding: 32px;
+    }
+
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .preview-box {
+      background: #1a1a2e;
+      border: 1px solid #3b3b6e;
+      border-radius: 20px;
+      padding: 32px 48px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      box-shadow: 0 8px 40px rgba(91, 33, 182, 0.3);
+    }
+
+    canvas {
+      border-radius: 22px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.6);
+      image-rendering: pixelated;
+      /* Display at 2× for better visibility */
+      width: 256px;
+      height: 256px;
+    }
+
+    .label {
+      font-size: 0.85rem;
+      color: #6b7280;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    button {
+      background: linear-gradient(135deg, #7c3aed, #3b82f6);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 14px 36px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.03em;
+    }
+    button:hover  { opacity: 0.9; transform: translateY(-1px); }
+    button:active { opacity: 1;   transform: translateY(0);    }
+
+    .instructions {
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 14px;
+      padding: 20px 28px;
+      max-width: 420px;
+      width: 100%;
+    }
+    .instructions h2 {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #9ca3af;
+      margin-bottom: 12px;
+    }
+    .instructions ol {
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .instructions li {
+      font-size: 0.95rem;
+      color: #d1d5db;
+      line-height: 1.5;
+    }
+    .instructions code {
+      background: #1f2937;
+      border-radius: 4px;
+      padding: 1px 6px;
+      font-family: "SF Mono", "Fira Code", monospace;
+      font-size: 0.88em;
+      color: #a78bfa;
+    }
+
+    .sizes {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .size-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .size-item canvas {
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    .size-item span {
+      font-size: 0.75rem;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>🎙 ZoomNotes Icon Generator</h1>
+
+  <div class="preview-box">
+    <span class="label">128 × 128 Preview (shown at 256px)</span>
+    <canvas id="mainCanvas" width="128" height="128"></canvas>
+    <button id="downloadBtn">⬇ Download icon.png</button>
+  </div>
+
+  <div class="sizes">
+    <div class="size-item">
+      <canvas id="c16"  width="16"  height="16"  style="width:32px;height:32px;"></canvas>
+      <span>16×16</span>
+    </div>
+    <div class="size-item">
+      <canvas id="c32"  width="32"  height="32"  style="width:48px;height:48px;"></canvas>
+      <span>32×32</span>
+    </div>
+    <div class="size-item">
+      <canvas id="c48"  width="48"  height="48"  style="width:64px;height:64px;"></canvas>
+      <span>48×48</span>
+    </div>
+  </div>
+
+  <div class="instructions">
+    <h2>How to use</h2>
+    <ol>
+      <li>Open this file in <strong>Chrome</strong> (File → Open…)</li>
+      <li>Click <strong>Download icon.png</strong> above</li>
+      <li>Place the downloaded <code>icon.png</code> in your extension folder</li>
+      <li>Update <code>manifest.json</code> to reference <code>"icon.png"</code> for all icon sizes</li>
+    </ol>
+  </div>
+
+  <script>
+    // ─────────────────────────────────────────────────────────────────────────
+    // drawIcon(ctx, size)
+    //   Draws the ZoomNotes icon onto the given 2D canvas context.
+    //   All coordinates are relative to 'size' so it scales to any resolution.
+    // ─────────────────────────────────────────────────────────────────────────
+    function drawIcon(ctx, size) {
+      const s = size / 128; // scale factor  (1 at 128px)
+      const r = size;       // shorthand
+
+      // ── 1. Background: rounded-rect with dark-blue-purple gradient ──────
+      const grad = ctx.createLinearGradient(0, 0, r, r);
+      grad.addColorStop(0,   "#1a1a3e");
+      grad.addColorStop(0.5, "#2d1b69");
+      grad.addColorStop(1,   "#3b1f8c");
+
+      const radius = 22 * s;
+      ctx.beginPath();
+      ctx.moveTo(radius, 0);
+      ctx.lineTo(r - radius, 0);
+      ctx.quadraticCurveTo(r, 0, r, radius);
+      ctx.lineTo(r, r - radius);
+      ctx.quadraticCurveTo(r, r, r - radius, r);
+      ctx.lineTo(radius, r);
+      ctx.quadraticCurveTo(0, r, 0, r - radius);
+      ctx.lineTo(0, radius);
+      ctx.quadraticCurveTo(0, 0, radius, 0);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      // ── 2. Subtle inner glow ─────────────────────────────────────────────
+      const glow = ctx.createRadialGradient(r * 0.5, r * 0.35, 0, r * 0.5, r * 0.35, r * 0.55);
+      glow.addColorStop(0,   "rgba(167, 139, 250, 0.18)");
+      glow.addColorStop(1,   "rgba(167, 139, 250, 0)");
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, r, r);
+
+      // ── 3. Microphone body ───────────────────────────────────────────────
+      ctx.fillStyle = "#ffffff";
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      const micX    = r * 0.5;        // centre-x
+      const micTopY = r * 0.12;       // top of capsule
+      const micW    = r * 0.28;       // half-width of body
+      const micBodyH = r * 0.33;      // height of rectangular part
+
+      // Capsule body (rounded top)
+      ctx.beginPath();
+      // bottom-left corner of rect portion
+      ctx.moveTo(micX - micW, micTopY + micW);          // start at left, below rounded top
+      // top arc (semicircle)
+      ctx.arc(micX, micTopY + micW, micW, Math.PI, 0, false);
+      // right side down
+      ctx.lineTo(micX + micW, micTopY + micW + micBodyH);
+      // bottom-left
+      ctx.lineTo(micX - micW, micTopY + micW + micBodyH);
+      ctx.closePath();
+      ctx.fill();
+
+      // ── 4. Microphone stand arc ──────────────────────────────────────────
+      const arcCY   = micTopY + micW + micBodyH;        // arc centre Y
+      const arcR    = r * 0.33;                         // stand arc radius
+      const lineW   = 5 * s;
+
+      ctx.lineWidth = lineW;
+      ctx.strokeStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(micX, arcCY, arcR, Math.PI, 0, true);    // upper semicircle (stand curve)
+      ctx.stroke();
+
+      // vertical pole below arc
+      const poleTop  = arcCY;
+      const poleBot  = arcCY + arcR * 0.55;
+      ctx.beginPath();
+      ctx.moveTo(micX, poleTop);
+      ctx.lineTo(micX, poleBot);
+      ctx.stroke();
+
+      // horizontal base line
+      const baseHalf = arcR * 0.55;
+      ctx.beginPath();
+      ctx.moveTo(micX - baseHalf, poleBot);
+      ctx.lineTo(micX + baseHalf, poleBot);
+      ctx.stroke();
+
+      // ── 5. "×3" text in gold/orange ──────────────────────────────────────
+      const textY = r * 0.80;
+      ctx.font = `bold ${Math.round(22 * s)}px "SF Pro Display", "Helvetica Neue", Arial, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillStyle = "#f59e0b";   // amber / gold
+      ctx.fillText("×3", micX, textY);
+
+      // ── 6. "ZN" small label at bottom ────────────────────────────────────
+      ctx.font = `600 ${Math.round(11 * s)}px "SF Pro Display", "Helvetica Neue", Arial, sans-serif`;
+      ctx.fillStyle = "rgba(255,255,255,0.45)";
+      ctx.fillText("ZN", micX, r * 0.925);
+    }
+
+    // ─── Render all canvases ──────────────────────────────────────────────────
+    function renderAll() {
+      const canvases = [
+        { id: "mainCanvas", size: 128 },
+        { id: "c16",        size: 16  },
+        { id: "c32",        size: 32  },
+        { id: "c48",        size: 48  },
+      ];
+      canvases.forEach(({ id, size }) => {
+        const canvas = document.getElementById(id);
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, size, size);
+        drawIcon(ctx, size);
+      });
+    }
+
+    // ─── Download handler ─────────────────────────────────────────────────────
+    document.getElementById("downloadBtn").addEventListener("click", () => {
+      const canvas = document.getElementById("mainCanvas");
+      const link = document.createElement("a");
+      link.download = "icon.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+
+    // ─── Run on load ──────────────────────────────────────────────────────────
+    renderAll();
+  </script>
+</body>
+</html>

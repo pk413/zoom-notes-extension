@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZoomNotes — Settings</title>
+  <link rel="stylesheet" href="settings.css" />
+</head>
+<body>
+  <div class="settings-container">
+    <header class="header">
+      <div class="header-brand">
+        <span class="logo">🎙️</span>
+        <div>
+          <h1>ZoomNotes Settings</h1>
+          <p class="subtitle">Multi-Meeting Recorder Configuration</p>
+        </div>
+      </div>
+      <a href="dashboard.html" target="_blank" class="btn btn-outline">Open Live Dashboard ↗</a>
+    </header>
+
+    <main class="settings-body">
+      <!-- AI Backend Section -->
+      <section class="card">
+        <div class="card-header">
+          <h2>🤖 AI Notes Backend</h2>
+          <span class="badge" id="aiStatusBadge">Configuring</span>
+        </div>
+        <p class="card-desc">Choose whether meeting audio is processed in Google Cloud or entirely locally on your Raspberry Pi 4.</p>
+
+        <div class="radio-group">
+          <label class="radio-card" id="geminiRadioCard">
+            <input type="radio" name="aiBackend" value="gemini" id="radioGemini" checked />
+            <div class="radio-content">
+              <span class="radio-title">☁️ Gemini 2.5 Flash</span>
+              <span class="radio-desc">Google AI Studio free tier. Native audio understanding.</span>
+            </div>
+          </label>
+
+          <label class="radio-card" id="cloudRadioCard">
+            <input type="radio" name="aiBackend" value="cloud" id="radioCloud" />
+            <div class="radio-content">
+              <span class="radio-title">🚀 NVIDIA NIM (Cloud Backend)</span>
+              <span class="radio-desc">Deployed on Render / Hugging Face with free NVIDIA NIM endpoints.</span>
+            </div>
+          </label>
+
+          <label class="radio-card" id="piRadioCard">
+            <input type="radio" name="aiBackend" value="pi" id="radioPi" />
+            <div class="radio-content">
+              <span class="radio-title">🍓 Raspberry Pi 4</span>
+              <span class="radio-desc">Private on-premise transcription via faster-whisper + Ollama.</span>
+            </div>
+          </label>
+        </div>
+
+        <!-- Gemini Config Block -->
+        <div class="config-block" id="geminiConfigBlock">
+          <div class="form-group">
+            <div class="label-row">
+              <label for="geminiApiKey">Gemini API Key</label>
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" class="helper-link">Get Free API Key ↗</a>
+            </div>
+            <div class="input-action-row">
+              <input type="password" id="geminiApiKey" placeholder="AIzaSy..." class="input-text" autocomplete="off" />
+              <button type="button" id="toggleGeminiKeyVis" class="btn btn-sm btn-icon" title="Show/Hide">👁️</button>
+              <button type="button" id="testGeminiBtn" class="btn btn-secondary">Test Connection</button>
+            </div>
+            <p class="help-text">Using model: <code>gemini-2.5-flash</code> (free tier eligible, audio input accepted directly)</p>
+            <div class="test-feedback" id="geminiFeedback"></div>
+          </div>
+        </div>
+
+        <!-- NVIDIA NIM / Cloud Backend Config Block -->
+        <div class="config-block" id="cloudConfigBlock" style="display: none;">
+          <div class="form-group">
+            <label for="cloudBackendUrl">Hosted Backend URL (Render / Hugging Face / Railway)</label>
+            <div class="input-action-row">
+              <input type="text" id="cloudBackendUrl" placeholder="https://your-username-zoomnotes-backend.hf.space" class="input-text" />
+              <button type="button" id="testCloudBtn" class="btn btn-secondary">Test Backend</button>
+            </div>
+            <p class="help-text">Deploy <code>cloud-backend/</code> to Hugging Face Spaces (Option A) for free.</p>
+          </div>
+          <div class="form-group">
+            <div class="label-row">
+              <label for="nvidiaApiKey">NVIDIA NIM API Key</label>
+              <a href="https://build.nvidia.com" target="_blank" class="helper-link">Get Free NIM Key at build.nvidia.com ↗</a>
+            </div>
+            <div class="input-action-row">
+              <input type="password" id="nvidiaApiKey" placeholder="nvapi-..." class="input-text" autocomplete="off" />
+              <button type="button" id="toggleNvidiaKeyVis" class="btn btn-sm btn-icon" title="Show/Hide">👁️</button>
+            </div>
+            <p class="help-text">Powered by models like <code>meta/llama-3.3-70b-instruct</code> via free serverless NIM endpoints.</p>
+            <div class="test-feedback" id="cloudFeedback"></div>
+          </div>
+        </div>
+
+        <!-- Raspberry Pi Config Block -->
+        <div class="config-block" id="piConfigBlock" style="display: none;">
+          <div class="form-group">
+            <label for="piBaseUrl">Raspberry Pi Base URL (mDNS or IP)</label>
+            <div class="input-action-row">
+              <input type="text" id="piBaseUrl" placeholder="http://rpi.local" value="http://rpi.local" class="input-text" />
+              <button type="button" id="testPiBtn" class="btn btn-secondary">Test Connection</button>
+            </div>
+            <div class="port-specs">
+              <div class="port-item">
+                <span class="port-name">Audio Transcription (Whisper)</span>
+                <code id="piWhisperUrl">http://rpi.local:8000/v1/audio/transcriptions</code>
+              </div>
+              <div class="port-item">
+                <span class="port-name">Notes Synthesis (Ollama LLM)</span>
+                <code id="piOllamaUrl">http://rpi.local:11434/v1/chat/completions</code>
+              </div>
+            </div>
+            <p class="help-text">Ensure you have run <code>install.sh</code> on your Pi. Both services must be running on your local network.</p>
+            <div class="test-feedback" id="piFeedback"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Notion Integration Section -->
+      <section class="card">
+        <div class="card-header">
+          <h2>📓 Notion Workspace Sync</h2>
+          <span class="badge" id="notionStatusBadge">Optional</span>
+        </div>
+        <p class="card-desc">Automatically upload structured meeting takeaways, action items, and live logs directly into a Notion Database.</p>
+
+        <div class="form-group">
+          <div class="label-row">
+            <label for="notionToken">Notion Internal Integration Token</label>
+            <a href="https://www.notion.so/my-integrations" target="_blank" class="helper-link">Create Notion Integration ↗</a>
+          </div>
+          <div class="input-action-row">
+            <input type="password" id="notionToken" placeholder="secret_..." class="input-text" autocomplete="off" />
+            <button type="button" id="toggleNotionTokenVis" class="btn btn-sm btn-icon" title="Show/Hide">👁️</button>
+          </div>
+          <p class="help-text">Starts with <code>secret_</code>. Remember to invite this integration to your Notion workspace page.</p>
+        </div>
+
+        <div class="form-group">
+          <div class="label-row">
+            <label for="notionParentPageId">Parent Page ID (or URL)</label>
+            <span class="help-tooltip" title="Copy the 32-character ID from the URL of your Notion page">ℹ️</span>
+          </div>
+          <input type="text" id="notionParentPageId" placeholder="e.g. 1a2b3c4d5e6f... or full URL" class="input-text" />
+          <p class="help-text">The parent Notion page where the <em>ZoomNotes — Meeting Notes</em> database will be created.</p>
+        </div>
+
+        <div class="form-group">
+          <div class="label-row">
+            <label for="notionDatabaseId">Database ID (Auto-populated or Existing)</label>
+          </div>
+          <div class="input-action-row">
+            <input type="text" id="notionDatabaseId" placeholder="Auto-generated upon first setup..." class="input-text" />
+            <button type="button" id="createNotionDbBtn" class="btn btn-secondary">Test &amp; Create DB</button>
+          </div>
+          <div class="test-feedback" id="notionFeedback"></div>
+        </div>
+      </section>
+
+      <!-- Recording Schedule Settings Section -->
+      <section class="card">
+        <div class="card-header">
+          <h2>⚙️ Automatic Automation Timers</h2>
+        </div>
+        <p class="card-desc">Operational schedule configured for maximum accuracy and memory management:</p>
+
+        <div class="info-grid">
+          <div class="info-box">
+            <span class="info-icon">📸</span>
+            <div class="info-content">
+              <strong>Screenshot Interval</strong>
+              <p>Every <strong>30 seconds</strong> per active Zoom tab (JPEG compressed, last 20 retained)</p>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <span class="info-icon">📝</span>
+            <div class="info-content">
+              <strong>Interim Notes Frequency</strong>
+              <p>Every <strong>5 minutes</strong> (audio chunk uploaded and analyzed, dashboard updated live)</p>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <span class="info-icon">💾</span>
+            <div class="info-content">
+              <strong>On Meeting Stop</strong>
+              <p>Generates consolidated markdown files, triggers automatic downloads, and updates Notion records</p>
+            </div>
+          </div>
+
+          <div class="info-box">
+            <span class="info-icon">🎧</span>
+            <div class="info-content">
+              <strong>Audio Passthrough</strong>
+              <p>Local sound playback is maintained via Web Audio <code>AudioContext</code> so you still hear all 3 calls</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Save & Status Bar -->
+      <div class="save-bar">
+        <div class="save-bar-left">
+          <span id="saveStatus" class="save-status">All changes saved locally</span>
+        </div>
+        <button type="button" id="saveSettingsBtn" class="btn btn-primary">Save All Settings</button>
+      </div>
+    </main>
+  </div>
+
+  <script src="settings.js"></script>
+</body>
+</html>

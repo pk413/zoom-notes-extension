@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZoomNotes Live Dashboard</title>
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <!-- ── Header ──────────────────────────────────────────── -->
+  <header class="dash-header">
+    <div class="dash-header-left">
+      <span class="logo">🎙</span>
+      <h1 class="dash-title">ZoomNotes <span class="subtitle">Live Dashboard</span></h1>
+    </div>
+    <div class="dash-header-right">
+      <div class="rec-status" id="recStatus">
+        <span class="rec-dot" id="recDot">⚪</span>
+        <span id="recLabel">Idle</span>
+      </div>
+      <div class="dash-timer" id="dashTimer">00:00:00</div>
+    </div>
+  </header>
+
+  <!-- ── Main Content ─────────────────────────────────────── -->
+  <main id="mainContent" class="main">
+    <!-- Idle / no recording state -->
+    <div class="no-session" id="noSession">
+      <div class="no-session-icon">📭</div>
+      <h2>No active recording session</h2>
+      <p>Start a recording from the ZoomNotes popup to see live updates here.</p>
+      <a class="open-popup-link" id="openPopupLink" href="#" title="Open Popup">Open Popup</a>
+    </div>
+
+    <!-- Meeting columns (populated by JS) -->
+    <div class="columns-grid" id="columnsGrid" style="display:none;"></div>
+  </main>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
